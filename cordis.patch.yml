@@ -1,0 +1,8 @@
+# 弹道仿真 skill bundle：挂载一个隔离的 skill-filesystem 提供方，只提供本包携带的 skill
+- insert:
+    - id: ballistic-simulation-skill
+      name: '@deepseek-ai/dsh-skill-filesystem'
+      config:
+        providerName: ballistic-simulation
+        includeDefaultRoots: false
+        bundledSkillDir: ./skills

@@ -1,0 +1,25 @@
+{
+  "name": "dsh-skill-ballistic-simulation",
+  "version": "0.1.0",
+  "description": "内/外弹道学的论文复现与代码编写 skill（DeepSeek Harness）",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bingbinggod369/dsh-skill-ballistic-simulation.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill": "*",
+    "@deepseek-ai/dsh-skill-filesystem": "*"
+  },
+  "files": [
+    "skills/",
+    "cordis.patch.yml",
+    "README.md"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "classical-interior",
+  "name": "经典内弹道（火药燃烧，集总参数）",
+  "domain": "interior_ballistics",
+  "solver_file": "classical_interior.py",
+  "entry_point": "solve",
+  "keywords": ["火药", "燃速", "膛压", "装药", "火药力", "燃速指数", "形状函数", "分裂燃烧", "高射炮", "身管", "无后座炮", "弹丸", "燃烧", "弧厚", "发射药"],
+  "validation": {"source": "《枪炮内弹道学》张小兵 P109/P114", "metrics": "峰值膛压误差0.03%，炮口速度误差1.2%"},
+  "notes": "经典集总参数内弹道（Lagrange 假设），三段式形状函数含分裂燃烧，燃速定律 r=u1*P^n。"
+}

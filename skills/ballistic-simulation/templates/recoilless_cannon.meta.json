@@ -1,0 +1,21 @@
+{
+  "id": "recoilless-cannon",
+  "name": "无后坐炮内弹道（炮尾喷管，喷出燃气抵消后坐）",
+  "domain": "interior_ballistics",
+  "solver_file": "recoilless_cannon.py",
+  "entry_point": "solve",
+  "keywords": ["无后座炮", "无坐力炮", "无坐炮", "喷管", "拉瓦尔喷管", "相对流量", "相对温度", "喷出燃气", "后喷", "极限速度", "喷口", "爆温", "82mm", "82毫米", "抵消后坐"],
+  "validation": {
+    "source": "《枪炮内弹道学》张小兵 P275/P277（82mm 无后坐炮）",
+    "reference_table": "弹道数据表.xlsx（M=最大压力、K=燃烧结束、G=出炮口）",
+    "errors": {
+      "M_max_pressure": {"sim": 36.67, "book": 35.82, "unit": "MPa", "rel_err": "+2.4%"},
+      "K_burnout_v": {"sim": 209.7, "book": 205.0, "unit": "m/s", "rel_err": "+2.3%"},
+      "K_burnout_p": {"sim": 28.12, "book": 27.43, "unit": "MPa", "rel_err": "+2.5%"},
+      "G_muzzle_v": {"sim": 264.96, "book": 258.4, "unit": "m/s", "rel_err": "+2.5%"},
+      "G_muzzle_t": {"sim": 6.863, "book": 7.01, "unit": "ms", "rel_err": "-2.1%"},
+      "G_muzzle_p": {"sim": 4.49, "book": 4.10, "unit": "MPa", "rel_err": "+9.5%"}
+    }
+  },
+  "notes": "经典内弹道基础上加喷管流出项（eta 相对流量、tau 相对温度），6 个一阶 ODE。误差规律：速度系统性偏高约2.5%、时间偏低约2.1%、膛压偏高（峰值+2.4%，炮口+9.5%）——提示模型与书存在小的系统性偏差，作参考模板时 LLM 改编需注意。"
+}

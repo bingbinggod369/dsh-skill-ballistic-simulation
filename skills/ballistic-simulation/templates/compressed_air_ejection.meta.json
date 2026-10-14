@@ -1,0 +1,10 @@
+{
+  "id": "compressed-air-ejection",
+  "name": "压缩空气弹射内弹道（高低压室 + 发射阀）",
+  "domain": "interior_ballistics",
+  "solver_file": "compressed_air_ejection.py",
+  "entry_point": "solve",
+  "keywords": ["压缩空气", "发射阀", "高压室", "低压室", "弹射", "弹体", "弹托", "流通面积", "过载", "理想气体", "绝热", "临界", "亚临界", "质量流量", "空气弹射"],
+  "validation": {"source": "《压缩空气弹射系统内弹道特性》兵工学报 2021,42(12)", "metrics": "最大过载误差约1%，初速误差2.5%"},
+  "notes": "高低压室 + 发射阀临界/亚临界流量 + 理想气体绝热膨胀模型。"
+}
