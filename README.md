@@ -8,14 +8,14 @@
 
 ## 安装
 ```bash
-dsh plugin --profile <name> add dsh-skill-ballistic-simulation
+# 尚未发布到 npm，从 GitHub 仓库安装
+dsh plugin --profile <name> add github:bingbinggod369/dsh-skill-ballistic-simulation
 ```
 安装后 skill 即可用；卸载即停用，灵活可控。
 
 ## 配置
 复制 `skills/ballistic-simulation/.env.example` 为 `.env`，填入：
-- `DEEPSEEK_API_KEY`（文本推理/代码生成）
-- `DASHSCOPE_API_KEY`（千问视觉公式 OCR）
+- `DASHSCOPE_API_KEY`（千问视觉公式 OCR，唯一外部 key）
 - `DASHSCOPE_MODEL`（如 qwen3-vl-plus）
 
 ## 目录

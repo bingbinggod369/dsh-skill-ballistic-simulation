@@ -7,8 +7,8 @@ whenToUse: 用户要求复现弹道论文、编写弹道模型代码、或进行
 # 弹道仿真复现
 
 ## 用途
-面向内/外弹道学的论文仿真智能体，两大能力：
-- **论文复现**：给一篇 PDF 论文 → 提取方程/参数 → 数值复现 → 与论文结果对齐 → 归因报告。
+面向内/外弹道学的论文仿真 skill，两大能力：
+- **论文复现**：给一篇 PDF 论文 → 渲染 → 公式 OCR → 模型重建 → 确认门 → 求解器生成 → 数值仿真 → 对齐 → 归因报告。
 - **代码编写**：给需求 → 基于已验证模板生成弹道计算代码 + 校验。
 
 ## 核心原则（必须遵守）
@@ -17,37 +17,43 @@ whenToUse: 用户要求复现弹道论文、编写弹道模型代码、或进行
 3. **方程闭环**：提取方程后列出未知量、数方程，验证封闭可解。
 4. **可复现**：交付完整方程集 + 参数表（逐条溯源）+ 求解配置 + 报告。
 
+## 关键分工（重要）
+- **agent（你）负责「想」**：模型重建、不确定点推断、求解器生成、结果对齐、归因、写报告——全部用你自己的 DSH 推理完成，**不调用外部文本 API**。
+- **代码负责「搬」**：PDF 渲染、视觉 OCR、模板匹配、数值计算——这些机械/视觉的活交给 `code/` 里的代码跑。
+- **唯一外部 API 依赖**：视觉 OCR 的千问 key（`DASHSCOPE_API_KEY`）。**文本推理不再需要 DeepSeek key**。
+
 ## 资源
 | 路径 | 说明 |
 |---|---|
 | `templates/` | 已验证求解器库（经典内弹道、压缩空气弹射、无后坐炮），每个带 `.meta.json`（关键词 + 验证来源 + 已知误差）|
-| `code/llm.py` | LLM 接入：`make_backend()`(文本=DeepSeek)、`make_vision_backend()`(视觉=千问)、`vision_ocr()`(公式OCR) |
-| `code/pipeline.py` | 复现流水线：`render_pdf`/`ocr_pages`/`reconstruct_model`/`infer_uncertainties`/`generate_solver_with_repair`/`run_from_model` |
+| `code/llm.py` | 视觉 OCR 后端：`make_vision_backend()`(千问/GLM/OpenAI)、`vision_ocr()`(公式OCR) |
+| `code/pipeline.py` | 机械流程：`render_pdf()`(PDF转图片)、`ocr_pages()`(逐页OCR) |
 | `code/template_lib.py` | 模板加载 + 关键词自动匹配 `match_template()` |
 
 ## 任务 A：代码编写
 1. 解析需求：模型类型、参数、约束；标记缺失项。
 2. 用 `template_lib.match_template(需求文本)` 匹配最接近的已验证模板。
-3. 基于匹配模板改编生成代码（锚点优先）；每个公式注释标注出处；缺失参数先问用户。
+3. 你直接基于匹配模板改编生成代码（锚点优先）；每个公式注释标注出处；缺失参数先问用户。
 4. 生成后运行验证 + 物理合理性检查；给出依据。
 
 ## 任务 B：论文复现（完整流程，每步记录）
 1. **渲染**：`pipeline.render_pdf(pdf, outdir)` → PDF 转图片（LibreOffice Kit，路径可用环境变量 LO_NODE/LO_CLI 配置）。
-2. **OCR**：`pipeline.ocr_pages(images)` 逐页识别文字+公式（走千问视觉 API；注意本环境 agent 模型无图像输入，不能自己看图）。
-3. **重建**：`pipeline.reconstruct_model(ocr)` 用 DeepSeek 提取结构化模型（假设/方程/参数/结果，results 用标准键 t_start/t_muzzle/v_muzzle/max_overload 等）。
-4. **推断**：`pipeline.infer_uncertainties(model)` 找出不确定点。
+2. **OCR**：`pipeline.ocr_pages(images)` 逐页识别文字+公式（走千问视觉 API）。
+3. **重建模型**：你直接读 OCR 文本，提取结构化模型（假设/方程/参数/结果，results 用标准键 t_start/t_muzzle/v_muzzle/max_overload 等）。
+4. **推断不确定点**：你直接找出参数缺失、方程缺失、假设不确定处。
 5. **确认门**：把提取的方程/参数/不确定点给用户确认；用户确认或授权后才继续，不擅自往下。
-6. **生成求解器**：`template_lib.match_template(ocr)` 匹配模板 → `pipeline.generate_solver_with_repair(model, outdir, reference_code=模板源码)` 生成求解器（含语法错误+结果偏差双层自修复）。
-7. **运行+对齐+报告**：`pipeline.run_from_model(model, outdir)` 运行求解器、与论文结果对齐、DeepSeek 归因、出报告。
-8. **接受/拒绝**：给用户看对齐表 + 归因；不接受则调整推断重试（每次推断+结果记录在案）。
+6. **匹配模板**：`template_lib.match_template(ocr)` 匹配最近模板。
+7. **生成求解器**：你基于匹配模板改编，手写 numpy RK4 求解器（锚点优先，必须给参考模板）。
+8. **运行**：用 pwsh/子进程跑求解器，取 RESULT_JSON 与曲线数据。
+9. **对齐 + 归因**：你对比仿真值与论文值、分析偏差原因。
+10. **报告**：你写报告（含对齐表 + 归因 + 局限）。
 
 ## API 配置（skill 根目录 .env）
-- `DEEPSEEK_API_KEY`：文本推理/代码生成（DeepSeek）
-- `DASHSCOPE_API_KEY`：千问视觉 OCR
+- `DASHSCOPE_API_KEY`：千问视觉 OCR（**唯一必需的外部 key**）
 - `DASHSCOPE_MODEL`：视觉模型名（如 qwen3-vl-plus）
 
 ## 关键细节
 - **求解器生成必须给参考模板**：实测从零生成逻辑错误率高（4 次修复仍错），给已验证模板后 1 次即正确。
-- **公式 OCR 必须走视觉 API**：本环境 agent 模型不支持图像输入。
-- **模板库的已知误差**（`.meta.json` 的 validation.errors）：LLM 改编时注意，避免把模板固有偏差误判为自己改错。
+- **公式 OCR 走视觉 API**：本环境 agent 模型可能无图像输入，不能自己看图。
+- **模板库的已知误差**（`.meta.json` 的 validation.errors）：改编时注意，避免把模板固有偏差误判为自己改错。
 - **模板库可扩充**：新验证一个模型 → 求解器 + `.meta.json`（含关键词）放入 `templates/` 即可，无需改流程。
